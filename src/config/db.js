@@ -1,32 +1,39 @@
-const { Pool } = require('pg');
+const { Sequelize } = require('sequelize');
 const config = require('./index');
-const logger = require('./logger'); // Tái sử dụng logger đã tạo ở bước trước
+const logger = require('./logger');
 
-// Khởi tạo Pool với các thông số từ file .env
-const pool = new Pool({
+const sequelize = new Sequelize(config.db.database, config.db.user, config.db.password, {
     host: config.db.host,
     port: config.db.port,
-    user: config.db.user,
-    password: config.db.password,
-    database: config.db.database,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    dialect: 'postgres',
+    logging: (msg) => logger.debug(msg),
+    pool: {
+        max: 20,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+    },
+    define: {
+        underscored: true,
+        timestamps: true
+    }
 });
 
-// Kiểm tra kết nối khi khởi động
 const connectDB = async () => {
     try {
-        const client = await pool.connect();
-        logger.info('🐘 PostgreSQL Connected Successfully!');
-        client.release(); // Trả kết nối lại cho pool
+        await sequelize.authenticate();
+        logger.info('🐘 PostgreSQL Connected Successfully (via Sequelize)!');
+
+        // Sync models in dev environment if needed
+        if (config.nodeEnv === 'development') {
+            // await sequelize.sync({ alter: true });
+            // logger.info('Database models synchronized.');
+        }
     } catch (err) {
         logger.error('❌ PostgreSQL Connection Error: ' + err.message);
-        process.exit(1); // Dừng app nếu ko có DB
+        process.exit(1);
     }
 };
 
-module.exports = {
-    query: (text, params) => pool.query(text, params), // Export hàm query để dùng sau này
-    connectDB
-};
+module.exports = sequelize;
+module.exports.connectDB = connectDB;
