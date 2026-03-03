@@ -5,6 +5,11 @@ const morgan = require('morgan');
 const { connectDB } = require('./config/db');
 
 const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 connectDB();
 
 // Cấu hình Morgan để đẩy log HTTP vào Winston
@@ -12,6 +17,9 @@ app.use(morgan(
     ':method :url :status :res[content-length] - :response-time ms',
     { stream: { write: (message) => logger.http(message.trim()) } }
 ));
+
+// Routes
+app.use('/api/v1/auth', require('./routes/auth.routes'));
 
 app.get('/', (req, res) => {
     res.send('Hello World');
