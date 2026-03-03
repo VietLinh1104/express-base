@@ -1,0 +1,57 @@
+const winston = require('winston');
+const path = require('path');
+
+// Định nghĩa các cấp độ log (Level)
+// error: 0, warn: 1, info: 2, http: 3, debug: 4
+const levels = {
+    error: 0,
+    warn: 1,
+    info: 2,
+    http: 3,
+    debug: 4,
+};
+
+// Định dạng màu sắc cho từng loại log khi hiển thị trên Console
+const colors = {
+    error: 'red',
+    warn: 'yellow',
+    info: 'green',
+    http: 'magenta',
+    debug: 'white',
+};
+winston.addColors(colors);
+
+// Cấu hình định dạng (Format)
+const format = winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+    winston.format.colorize({ all: true }), // Thêm màu sắc
+    winston.format.printf(
+        (info) => `${info.timestamp} ${info.level}: ${info.message}`,
+    ),
+);
+
+// Cấu hình nơi lưu trữ (Transports)
+const transports = [
+    // 1. Hiển thị log ra Console (Màn hình terminal)
+    new winston.transports.Console(),
+
+    // // 2. Lưu các log lỗi (error) vào file riêng
+    // new winston.transports.File({
+    //     filename: path.join(__dirname, '../../logs/error.log'),
+    //     level: 'error',
+    // }),
+
+    // // 3. Lưu tất cả log vào file chung
+    // new winston.transports.File({
+    //     filename: path.join(__dirname, '../../logs/all.log')
+    // }),
+];
+
+const logger = winston.createLogger({
+    level: process.env.NODE_ENV === 'development' ? 'debug' : 'warn',
+    levels,
+    format,
+    transports,
+});
+
+module.exports = logger;
