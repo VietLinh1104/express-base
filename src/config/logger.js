@@ -32,19 +32,7 @@ const format = winston.format.combine(
 
 // Cấu hình nơi lưu trữ (Transports)
 const transports = [
-    // 1. Hiển thị log ra Console (Màn hình terminal)
     new winston.transports.Console(),
-
-    // // 2. Lưu các log lỗi (error) vào file riêng
-    // new winston.transports.File({
-    //     filename: path.join(__dirname, '../../logs/error.log'),
-    //     level: 'error',
-    // }),
-
-    // // 3. Lưu tất cả log vào file chung
-    // new winston.transports.File({
-    //     filename: path.join(__dirname, '../../logs/all.log')
-    // }),
 ];
 
 const logger = winston.createLogger({
